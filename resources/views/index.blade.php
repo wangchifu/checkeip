@@ -3,7 +3,7 @@
 @section('content')
 <?php $att = session('gsuite_login'); ?>
 @if(!empty($att))
-    @if($att['name']=="王麒富" and $att['school_code']=="074628")
+    @if(($att['name']=="王麒富" and $att['school_code']=="074628") or ($att['name']=="林哲民" and $att['school_code']=="079998"))
     <div class="container mt-5">
         <h2 class="mb-4">上傳 CSV 檔案</h2>
         <form action="{{ route('upload_csv') }}" method="POST" enctype="multipart/form-data">
@@ -16,10 +16,32 @@
         </form>
         @if(is_file(storage_path('app/privacy/all.csv')))
             <p>已有檔案上傳</p>
+            <p>以下為身分證格式有問題者</p>
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>序號</th>
+                        <th>身分證</th>
+                        <th>gsuite帳號</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($error_users as $user)
+                    <tr>            
+                        <td>{{ $loop->iteration }}</td>            
+                        <td>{{ $user['pid'] }}</td>
+                        <td>{{ $user['gsuite'] }}</td>
+                        <td>{{ $user['date'] }}</td>
+                    </tr>                    
+                @endforeach
+                </tbody>
+            </table>
+            <hr>
         @endif
     </div>        
     @endif
-    <h2 class="mb-4">已登記列表</h2>
+    <h2 class="mb-4">{{ $att['school_name'] }}已登記列表</h2>
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
             <tr>

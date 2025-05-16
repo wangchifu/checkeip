@@ -13,7 +13,8 @@ class HomeController extends Controller
         $att = session('gsuite_login');
         $staffs = [];
         $teachers = [];
-        $user = [];
+        $users = [];
+        $error_users = [];
         $check_users = [];
         if(!empty($att)){
             if($att['login']){
@@ -23,7 +24,8 @@ class HomeController extends Controller
                 foreach($staffs as $staff) {
                     $teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
                     $teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
-                    $teachers[$staff->staff_person_id]['gsuite_account'] = $staff->gsuite_account;
+                    $gsuite = $this->hideAccount($staff->gsuite_account);
+                    $teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
                 }   
                 
                 if(is_file(storage_path('app/privacy/all.csv'))){
@@ -31,9 +33,17 @@ class HomeController extends Controller
                     if (($handle = fopen($csvFile, 'r')) !== false) {
                         while (($data = fgetcsv($handle, 1000, ',')) !== false) {                            
                             $data[1] = str_replace(' ', '', $data[1]);
-                            $user[hash('sha256',$data[1])]['date'] = $data[0];
-                            $user[hash('sha256',$data[1])]['pid'] = $data[1];
-                            $user[hash('sha256',$data[1])]['agree'] = $data[4];
+                            $data[1] = strtoupper($data[1]);    
+                            if(!$this->isValidTaiwanID($data[1])){
+                                $error_users[hash('sha256',$data[1])]['date'] = $data[0];
+                                $error_users[hash('sha256',$data[1])]['pid'] = $data[1];
+                                $error_users[hash('sha256',$data[1])]['gsuite'] = $data[3];
+                                $error_users[hash('sha256',$data[1])]['agree'] = $data[4];
+                            }
+                            $users[hash('sha256',$data[1])]['date'] = $data[0];
+                            $users[hash('sha256',$data[1])]['pid'] = $data[1];
+                            $users[hash('sha256',$data[1])]['gsuite'] = $data[3];
+                            $users[hash('sha256',$data[1])]['agree'] = $data[4];
                         }
                         fclose($handle);
                     } else {
@@ -41,17 +51,12 @@ class HomeController extends Controller
                     }
                 }
                 foreach($teachers as $k => $v) {
-                    if(isset($user[$k])){
-                        $check_users[$k]['date'] = $user[$k]['date'];
-                        
-                        $first = substr($user[$k]['pid'], 0, 1);
-                        $last3 = substr($user[$k]['pid'], -3);
-                        $masked = str_repeat('*', strlen($user[$k]['pid']) - 4);
-                    
-                        $pid = $first . $masked . $last3;
-
+                    if(isset($users[$k])){
+                        $check_users[$k]['date'] = $users[$k]['date'];                                                
+                        $pid = $this->hideAccount($users[$k]['pid']);
                         $check_users[$k]['pid'] = $pid;
-                        $check_users[$k]['agree'] = $user[$k]['agree'];
+                        $check_users[$k]['agree'] = $users[$k]['agree'];
+                        $v['name'] = $this->hideMiddleChineseName($v['name']);
                         $check_users[$k]['name'] = $v['name'];
                         $check_users[$k]['title'] = $v['title'];
                         $check_users[$k]['gsuite_account'] = $v['gsuite_account'];
@@ -62,7 +67,8 @@ class HomeController extends Controller
         
         
         $data = [
-            'check_users' => $check_users            
+            'check_users' => $check_users,
+            'error_users' => $error_users,     
         ];
         return view('index',$data);
     }
@@ -174,6 +180,75 @@ class HomeController extends Controller
             return redirect()->route('index');
         }
         
+    }
+
+    public function hideMiddleChineseName($name) {
+        $len = mb_strlen($name, 'UTF-8');
+    
+        if ($len <= 2) {
+            // 如果只有兩個字，就隱藏第二個
+            return mb_substr($name, 0, 1, 'UTF-8') . '＊';
+        }
+    
+        // 三個字以上，隱藏中間所有字
+        $first = mb_substr($name, 0, 1, 'UTF-8');
+        $last = mb_substr($name, -1, 1, 'UTF-8');
+        $middleHidden = str_repeat('＊', $len - 2);
+    
+        return $first . $middleHidden . $last;
+    }
+
+    public function hideAccount($account) {
+        $len = mb_strlen($account, 'UTF-8');
+
+        if ($len <= 1) {
+            // 帳號長度為 0 或 1，直接回傳
+            return $account;
+        } elseif ($len == 2) {
+            // 長度為 2，只保留第一個
+            return mb_substr($account, 0, 1, 'UTF-8') . '*';
+        }
+    
+        $first = mb_substr($account, 0, 1, 'UTF-8');
+        $last = mb_substr($account, -1, 1, 'UTF-8');
+        $hidden = str_repeat('*', $len - 2);
+    
+        return $first . $hidden . $last;
+    }
+
+    public function isValidTaiwanID($id) {
+        // 身分證格式檢查：1 個大寫英文字母 + 9 個數字
+        if (!preg_match("/^[A-Z][12][0-9]{8}$/", $id)) {
+            return false;
+        }
+    
+        // 字母對應數值表（A=10, B=11, ..., Z=33）
+        $letters = [
+            'A'=>10, 'B'=>11, 'C'=>12, 'D'=>13, 'E'=>14, 'F'=>15, 'G'=>16, 'H'=>17,
+            'I'=>34, 'J'=>18, 'K'=>19, 'L'=>20, 'M'=>21, 'N'=>22, 'O'=>35, 'P'=>23,
+            'Q'=>24, 'R'=>25, 'S'=>26, 'T'=>27, 'U'=>28, 'V'=>29, 'W'=>32, 'X'=>30,
+            'Y'=>31, 'Z'=>33
+        ];
+    
+        $letter = strtoupper($id[0]);
+        if (!isset($letters[$letter])) return false;
+    
+        // 將首字母轉成兩位數
+        $n1 = intval($letters[$letter] / 10);
+        $n2 = $letters[$letter] % 10;
+    
+        // 權重係數（共 10 位）
+        $weights = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    
+        // 開始加總
+        $sum = $n1 * $weights[0] + $n2 * $weights[1];
+        for ($i = 1; $i <= 8; $i++) {
+            $sum += intval($id[$i]) * $weights[$i+1];
+        }
+        // 加上最後一碼（檢查碼）
+        $sum += intval($id[9]);
+    
+        return $sum % 10 === 0;
     }
     
 }
