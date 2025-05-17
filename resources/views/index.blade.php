@@ -28,7 +28,7 @@
                 </thead>
                 <tbody>
                 @foreach($error_users as $user)
-                    <tr>            
+                    <tr style="word-break: break-word;overflow-wrap: break-word;">            
                         <td>{{ $loop->iteration }}</td>            
                         <td>{{ $user['pid'] }}</td>
                         <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
@@ -36,7 +36,7 @@
                             $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
                             $schools_id = config('ge.schools_id');                           
                         ?>
-                        <td style="word-break: break-word;overflow-wrap: break-word;">{{ $gsuite }}
+                        <td>{{ $gsuite }}
                             @if(!empty($maybe_user))       
                                 <br><span class="text-secondary small">(可能是：<br>
                                 @if(isset($schools_id[$maybe_user->staff_sid]))
@@ -83,7 +83,7 @@
                         $img = "";
                     }
                 ?>
-            <tr style="<?= $css ?>">
+            <tr style="<?= $css ?> word-break: break-word;overflow-wrap: break-word;">
                 <td>{!! $img !!}{{ $n }}</td>
                 <td><?= htmlspecialchars($user['pid']) ?></td>                
                 <td><?= htmlspecialchars($user['agree']) ?></td>
