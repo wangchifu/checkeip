@@ -31,7 +31,23 @@
                     <tr>            
                         <td>{{ $loop->iteration }}</td>            
                         <td>{{ $user['pid'] }}</td>
-                        <td>{{ $user['gsuite'] }}</td>
+                        <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
+                        <?php
+                            $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
+                            $schools_id = config('ge.schools_id');                           
+                        ?>
+                        <td style="word-break: break-word;overflow-wrap: break-word;">{{ $gsuite }}
+                            @if(!empty($maybe_user))       
+                                <br><span class="text-secondary small">(可能是：<br>
+                                @if(isset($schools_id[$maybe_user->staff_sid]))
+                                    {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
+                                @else
+                                    {{ $maybe_user->staff_sid }}
+                                @endif                                
+                                {{ $maybe_user->staff_title }}<br>                                                     
+                                {{ $maybe_user->staff_name }})</span>
+                            @endif                            
+                        </td>
                         <td>{{ $user['date'] }}</td>
                     </tr>                    
                 @endforeach
@@ -57,9 +73,18 @@
         <tbody>
             <?php $n = 1; ?>
             <?php foreach ($check_users as $user): ?>
-            <tr>
-                <td>{{ $n }}</td>
-                <td><?= htmlspecialchars($user['pid']) ?></td>
+            <?php   
+                    if($user['agree']=="不同意"){
+                        $css = "  font-weight: bold;color: red;";
+                        $img = "<img src='".asset('images/no.png')."' width='15'>";
+                    }elseif($user['agree']=="同意"){
+                        $css = "";
+                        $img = "";
+                    }
+                ?>
+            <tr style="<?= $css ?>">
+                <td>{!! $img !!}{{ $n }}</td>
+                <td><?= htmlspecialchars($user['pid']) ?></td>                
                 <td><?= htmlspecialchars($user['agree']) ?></td>
                 <td><?= htmlspecialchars($user['title']) ?></td>
                 <td><?= htmlspecialchars($user['name']) ?></td>
