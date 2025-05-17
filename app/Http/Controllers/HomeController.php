@@ -13,10 +13,12 @@ class HomeController extends Controller
         $att = session('gsuite_login');
         $staffs = [];
         $teachers = [];
+        $all_teachers = [];
         $users = [];
         $error_users = [];
+        $all_error_users = [];
         $check_users = [];
-        if(!empty($att)){
+        if(!empty($att)){            
             if($att['login']){
                 $staffs = StaffView::where('staff_sid', session('gsuite_login.school_code'))       
                 ->where('staff_kind','<>', '學生')     
@@ -49,7 +51,27 @@ class HomeController extends Controller
                     } else {
                         echo "無法開啟檔案";
                     }
+                    if(($att['name']=="王麒富" and $att['school_code']=="074628") or ($att['name']=="林哲民" and $att['school_code']=="079998")){
+                        $all_staffs = StaffView::where('staff_kind','<>', '學生')     
+                        ->get();
+                        foreach($all_staffs as $staff) {
+                            $all_teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
+                            $all_teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
+                            $gsuite = $this->hideAccount($staff->gsuite_account);
+                            $all_teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
+                        }
+                        foreach($users as $k => $v) {
+                            if(!isset($all_teachers[$k])){
+                                $all_error_users[$k]['date'] = $users[$k]['date'];
+                                $all_error_users[$k]['pid'] = $users[$k]['pid'];
+                                $all_error_users[$k]['gsuite'] = $users[$k]['gsuite'];
+                                $all_error_users[$k]['agree'] = $users[$k]['agree'];
+                            }
+
+                        }
+                    }
                 }
+                
                 foreach($teachers as $k => $v) {
                     if(isset($users[$k])){
                         $check_users[$k]['date'] = $users[$k]['date'];                                                
@@ -64,11 +86,14 @@ class HomeController extends Controller
                 }                
             }                            
         }
+
+        //dd($all_error_users);
         
         
         $data = [
             'check_users' => $check_users,
             'error_users' => $error_users,     
+            'all_error_users' => $all_error_users,   
         ];
         return view('index',$data);
     }

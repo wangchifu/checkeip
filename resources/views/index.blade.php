@@ -15,7 +15,10 @@
             <button type="submit" class="btn btn-primary">上傳</button>
         </form>
         @if(is_file(storage_path('app/privacy/all.csv')))
-            <p>已有檔案上傳</p>
+            <?php
+            date_default_timezone_set('Asia/Taipei');
+            ?>
+            <p>已有檔案上傳({{ date("Y-m-d H:i:s", filectime(storage_path('app/privacy/all.csv'))) }})</p>
             <p>以下為身分證格式有問題者</p>
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-dark">
@@ -28,6 +31,44 @@
                 </thead>
                 <tbody>
                 @foreach($error_users as $user)
+                    <tr style="word-break: break-word;overflow-wrap: break-word;">            
+                        <td>{{ $loop->iteration }}</td>            
+                        <td>{{ $user['pid'] }}</td>
+                        <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
+                        <?php
+                            $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
+                            $schools_id = config('ge.schools_id');                           
+                        ?>
+                        <td>{{ $gsuite }}
+                            @if(!empty($maybe_user))       
+                                <br><span class="text-secondary small">(可能是：<br>
+                                @if(isset($schools_id[$maybe_user->staff_sid]))
+                                    {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
+                                @else
+                                    {{ $maybe_user->staff_sid }}
+                                @endif                                
+                                {{ $maybe_user->staff_title }}<br>                                                     
+                                {{ $maybe_user->staff_name }})</span>
+                            @endif                            
+                        </td>
+                        <td>{{ $user['date'] }}</td>
+                    </tr>                    
+                @endforeach
+                </tbody>
+            </table>
+            <hr>
+            <p>以下為有填表單，但對應staff_view找不到的名單</p>
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>序號</th>
+                        <th>身分證</th>
+                        <th>gsuite帳號</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($all_error_users as $user)
                     <tr style="word-break: break-word;overflow-wrap: break-word;">            
                         <td>{{ $loop->iteration }}</td>            
                         <td>{{ $user['pid'] }}</td>
