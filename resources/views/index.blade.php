@@ -58,6 +58,7 @@
     </div>        
     @endif
     <h2 class="mb-4">{{ $att['school_name'] }}已登記列表</h2>
+    <p class="text-danger">*若確定有填寫表單，卻沒有在下列，很可能是因為身分證填錯！</p>
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
             <tr>

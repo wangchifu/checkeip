@@ -217,12 +217,12 @@ class HomeController extends Controller
     }
 
     public function isValidTaiwanID($id) {
-        // 身分證格式檢查：1 個大寫英文字母 + 9 個數字
-        if (!preg_match("/^[A-Z][12][0-9]{8}$/", $id)) {
+        // 檢查基本格式
+        if (!preg_match("/^[A-Z][1289][0-9]{8}$/", strtoupper($id))) {
             return false;
         }
     
-        // 字母對應數值表（A=10, B=11, ..., Z=33）
+        // 字母對應數值表（A=10, ..., Z=33，I=34, O=35）
         $letters = [
             'A'=>10, 'B'=>11, 'C'=>12, 'D'=>13, 'E'=>14, 'F'=>15, 'G'=>16, 'H'=>17,
             'I'=>34, 'J'=>18, 'K'=>19, 'L'=>20, 'M'=>21, 'N'=>22, 'O'=>35, 'P'=>23,
@@ -230,25 +230,37 @@ class HomeController extends Controller
             'Y'=>31, 'Z'=>33
         ];
     
-        $letter = strtoupper($id[0]);
+        $id = strtoupper($id);
+        $letter = $id[0];
         if (!isset($letters[$letter])) return false;
     
-        // 將首字母轉成兩位數
+        // 將英文字轉成兩位數
         $n1 = intval($letters[$letter] / 10);
         $n2 = $letters[$letter] % 10;
     
-        // 權重係數（共 10 位）
+        $nums = str_split(substr($id, 1)); // 取後 9 碼為陣列
+        $type = $id[1]; // 第二碼判斷身分類型
+    
+        // 權重計算
         $weights = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1];
     
-        // 開始加總
+        // 計算總和（A 字母的兩位數 + 身分證數字）
         $sum = $n1 * $weights[0] + $n2 * $weights[1];
-        for ($i = 1; $i <= 8; $i++) {
-            $sum += intval($id[$i]) * $weights[$i+1];
-        }
-        // 加上最後一碼（檢查碼）
-        $sum += intval($id[9]);
     
+        for ($i = 0; $i < 8; $i++) {
+            $sum += intval($nums[$i]) * $weights[$i + 2];
+        }
+    
+        // 舊式居留證（第二碼為 8 或 9）需要將第 9 碼也乘權重 1
+        if ($type === '8' || $type === '9') {
+            $sum += intval($nums[8]);
+        } else {
+            // 本國與新式居留證，最後一碼是檢查碼，需加進總和中
+            $sum += intval($nums[8]);
+        }
+    
+        // 驗證結果
         return $sum % 10 === 0;
-    }
+    }    
     
 }
