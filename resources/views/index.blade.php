@@ -40,7 +40,7 @@
                             $schools_id = config('ge.schools_id');                           
                         ?>
                         <td>{{ $gsuite }}
-                            @if(!empty($maybe_user))       
+                            @if(!empty($maybe_user->id))       
                                 <br><span class="text-secondary small">(可能是：<br>
                                 @if(isset($schools_id[$maybe_user->staff_sid]))
                                     {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
@@ -49,6 +49,8 @@
                                 @endif                                
                                 {{ $maybe_user->staff_title }}<br>                                                     
                                 {{ $maybe_user->staff_name }})</span>
+                            @else
+                                <br><span class="text-danger small">(gsuite 對應到 staff_view 也沒有查詢到)<br>
                             @endif                            
                         </td>
                         <td>{{ $user['date'] }}</td>
@@ -72,7 +74,7 @@
                     <tr style="word-break: break-word;overflow-wrap: break-word;">            
                         <td>{{ $loop->iteration }}</td>                            
                         <td>@if(!$user['check_pid'])
-                            <span class="text-danger">身分證格式錯誤</span>
+                            <span class="text-danger">身分證格式錯誤</span><br>
                             @endif
                             {{ $user['pid'] }}
                         </td>
@@ -82,7 +84,7 @@
                             $schools_id = config('ge.schools_id');                           
                         ?>
                         <td>{{ $gsuite }}
-                            @if(!empty($maybe_user))       
+                            @if(!empty($maybe_user->id))       
                                 <br><span class="text-secondary small">(可能是：<br>
                                 @if(isset($schools_id[$maybe_user->staff_sid]))
                                     {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
@@ -91,6 +93,8 @@
                                 @endif                                
                                 {{ $maybe_user->staff_title }}<br>                                                     
                                 {{ $maybe_user->staff_name }})</span>
+                            @else
+                                <br><span class="text-danger small">(gsuite 對應到 staff_view 也沒有查詢到)<br>                                
                             @endif                            
                         </td>
                         <td>{{ $user['date'] }}</td>
