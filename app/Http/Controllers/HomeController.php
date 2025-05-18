@@ -18,6 +18,8 @@ class HomeController extends Controller
         $error_users = [];
         $all_error_users = [];
         $check_users = [];
+        $all_staffs_count = 0;
+        $all_users_count = 0;
         if(!empty($att)){            
             if($att['login']){
                 $staffs = StaffView::where('staff_sid', session('gsuite_login.school_code'))       
@@ -31,9 +33,10 @@ class HomeController extends Controller
                 }   
                 
                 if(is_file(storage_path('app/privacy/all.csv'))){
-                    $csvFile = storage_path('app/privacy/all.csv');
+                    $csvFile = storage_path('app/privacy/all.csv');                    
                     if (($handle = fopen($csvFile, 'r')) !== false) {
-                        while (($data = fgetcsv($handle, 1000, ',')) !== false) {                            
+                        while (($data = fgetcsv($handle, 1000, ',')) !== false) {        
+                            $all_users_count++;                    
                             $data[1] = str_replace(' ', '', $data[1]);
                             $data[1] = strtoupper($data[1]);    
                             if(!$this->isValidTaiwanID($data[1])){
@@ -54,6 +57,7 @@ class HomeController extends Controller
                     if(($att['name']=="王麒富" and $att['school_code']=="074628") or ($att['name']=="林哲民" and $att['school_code']=="079998")){
                         $all_staffs = StaffView::where('staff_kind','<>', '學生')     
                         ->get();
+                        $all_staffs_count = $all_staffs->count();
                         foreach($all_staffs as $staff) {
                             $all_teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
                             $all_teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
@@ -64,6 +68,7 @@ class HomeController extends Controller
                             if(!isset($all_teachers[$k])){
                                 $all_error_users[$k]['date'] = $users[$k]['date'];
                                 $all_error_users[$k]['pid'] = $users[$k]['pid'];
+                                $all_error_users[$k]['check_pid'] = ($this->isValidTaiwanID($users[$k]['pid'])) ?true:false;
                                 $all_error_users[$k]['gsuite'] = $users[$k]['gsuite'];
                                 $all_error_users[$k]['agree'] = $users[$k]['agree'];
                             }
@@ -94,6 +99,8 @@ class HomeController extends Controller
             'check_users' => $check_users,
             'error_users' => $error_users,     
             'all_error_users' => $all_error_users,   
+            'all_users_count'=> $all_users_count,
+            'all_staffs_count'=> $all_staffs_count,
         ];
         return view('index',$data);
     }

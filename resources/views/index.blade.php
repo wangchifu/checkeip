@@ -18,7 +18,7 @@
             <?php
             date_default_timezone_set('Asia/Taipei');
             ?>
-            <p>已有檔案上傳({{ date("Y-m-d H:i:s", filectime(storage_path('app/privacy/all.csv'))) }})</p>
+            <p>已有檔案上傳 ({{ $all_users_count }}人 {{ date("Y-m-d H:i:s", filectime(storage_path('app/privacy/all.csv'))) }})</p>
             <p>以下為身分證格式有問題者</p>
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-dark">
@@ -57,7 +57,7 @@
                 </tbody>
             </table>
             <hr>
-            <p>以下為有填表單，但對應staff_view找不到的名單</p>
+            <p>以下為有填表單，但對應staff_view({{ $all_staffs_count }} 人) 找不到的名單</p>
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -70,8 +70,12 @@
                 <tbody>
                 @foreach($all_error_users as $user)
                     <tr style="word-break: break-word;overflow-wrap: break-word;">            
-                        <td>{{ $loop->iteration }}</td>            
-                        <td>{{ $user['pid'] }}</td>
+                        <td>{{ $loop->iteration }}</td>                            
+                        <td>@if(!$user['check_pid'])
+                            <span class="text-danger">身分證格式錯誤</span>
+                            @endif
+                            {{ $user['pid'] }}
+                        </td>
                         <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
                         <?php
                             $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
