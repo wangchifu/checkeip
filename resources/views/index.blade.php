@@ -3,7 +3,8 @@
 @section('content')
 <?php $att = session('gsuite_login'); ?>
 @if(!empty($att))
-    @if(($att['name']=="王麒富" and $att['school_code']=="074628") or ($att['name']=="林哲民" and $att['school_code']=="079998"))
+@if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
+    ($att['name']=="林哲民" and $att['school_code']=="079998"))
     <div class="container mt-5">
         <h2 class="mb-4">上傳 CSV 檔案</h2>
         <form action="{{ route('upload_csv') }}" method="POST" enctype="multipart/form-data">
@@ -47,6 +48,7 @@
                                 @else
                                     {{ $maybe_user->staff_sid }}
                                 @endif                                
+                                {{ $maybe_user->staff_kind }}<br>        
                                 {{ $maybe_user->staff_title }}<br>                                                     
                                 {{ $maybe_user->staff_name }})</span>
                             @else

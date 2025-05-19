@@ -201,17 +201,90 @@ class HomeController extends Controller
 
     public function upload_csv(Request $request)
     {
-        $file = $request->file('csvFile');
-        if ($file) {
-            $filename = "all.csv";
-            if(!is_dir(storage_path('app/privacy'))){
-                mkdir(storage_path('app/privacy'), 0777, true);
+        $att = session('gsuite_login');
+        if(!empty($att)){
+            if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
+                ($att['name']=="林哲民" and $att['school_code']=="079998"))
+            {
+                $file = $request->file('csvFile');
+                if ($file) {
+                    $filename = "all.csv";
+                    if(!is_dir(storage_path('app/privacy'))){
+                        mkdir(storage_path('app/privacy'), 0777, true);
+                    }
+                    $file->storeAs('privacy',$filename);
+                                
+                    return redirect()->route('index');
+                }
             }
-            $file->storeAs('privacy',$filename);
-                        
-            return redirect()->route('index');
-        }
+        }        
         
+    }
+
+    public function schools($code=null)
+    {
+        $schools_id = [];
+        $check_users = [];
+        $att = session('gsuite_login');
+        if(!empty($att)){
+            if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
+                ($att['name']=="林哲民" and $att['school_code']=="079998") or
+                ($att['name']=="林金玉" and $att['school_code']=="079998") or
+                ($att['name']=="林政言" and $att['school_code']=="079998"))
+            {
+                $schools_id = config('ge.schools_id');
+
+                if($code){
+                    $staffs = StaffView::where('staff_sid', $code)       
+                    ->where('staff_kind','<>', '學生')     
+                    ->get();
+                    foreach($staffs as $staff) {
+                        $teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
+                        $teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
+                        $gsuite = $this->hideAccount($staff->gsuite_account);
+                        $teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
+                    }   
+                    
+                    if(is_file(storage_path('app/privacy/all.csv'))){
+                        $csvFile = storage_path('app/privacy/all.csv');                    
+                        if (($handle = fopen($csvFile, 'r')) !== false) {
+                            while (($data = fgetcsv($handle, 1000, ',')) !== false) {        
+                                $data[1] = str_replace(' ', '', $data[1]);
+                                $data[1] = strtoupper($data[1]);    
+                                $users[hash('sha256',$data[1])]['date'] = $data[0];
+                                $users[hash('sha256',$data[1])]['pid'] = $data[1];
+                                $users[hash('sha256',$data[1])]['gsuite'] = $data[3];
+                                $users[hash('sha256',$data[1])]['agree'] = $data[4];
+                            }
+                            fclose($handle);
+                        } else {
+                            echo "無法開啟檔案";
+                        }                        
+                                                                      
+                    }
+                    
+                    foreach($teachers as $k => $v) {
+                        if(isset($users[$k])){
+                            $check_users[$k]['date'] = $users[$k]['date'];                                                
+                            $pid = $this->hideAccount($users[$k]['pid']);
+                            $check_users[$k]['pid'] = $pid;
+                            $check_users[$k]['agree'] = $users[$k]['agree'];
+                            $v['name'] = $this->hideMiddleChineseName($v['name']);
+                            $check_users[$k]['name'] = $v['name'];
+                            $check_users[$k]['title'] = $v['title'];
+                            $check_users[$k]['gsuite_account'] = $v['gsuite_account'];
+                        }
+                    }   
+                }
+            }        
+        }
+        $data = [
+            'schools_id' => $schools_id,
+            'code' => $code,
+            'check_users' => $check_users,
+            'school_name' => isset($schools_id[$code]) ? $schools_id[$code] : '',
+        ];
+        return view('schools',$data);
     }
 
     public function hideMiddleChineseName($name) {

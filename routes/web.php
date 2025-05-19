@@ -20,3 +20,4 @@ Route::post('gauth', [HomeController::class,'gauth'])->name('gauth');
 Route::get('logout', [HomeController::class,'logout'])->name('logout');
 Route::get('pic', [HomeController::class,'pic'])->name('pic');
 Route::post('upload_csv', [HomeController::class,'upload_csv'])->name('upload_csv');
+Route::get('schools/{code?}', [HomeController::class,'schools'])->name('schools');

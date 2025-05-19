@@ -21,6 +21,15 @@
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item"><a class="nav-link active" aria-current="page" href="{{ route('index') }}">Home</a></li>
                         <?php $att = session('gsuite_login'); ?>
+                        @if(!empty($att))
+                            @if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
+                            ($att['name']=="林哲民" and $att['school_code']=="079998") or
+                            ($att['name']=="林金玉" and $att['school_code']=="079998") or
+                            ($att['name']=="林政言" and $att['school_code']=="079998"))
+                                <li class="nav-item"><a class="nav-link" href="{{ route('schools') }}">查詢各校</a></li>
+                            @endif
+                        @endif
+                        
                         @if(empty($att))
                             <li class="nav-item"><a class="nav-link" href="{{ route('glogin') }}">登入</a></li>
                         @else
