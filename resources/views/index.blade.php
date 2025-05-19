@@ -4,7 +4,9 @@
 <?php $att = session('gsuite_login'); ?>
 @if(!empty($att))
 @if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
-    ($att['name']=="林哲民" and $att['school_code']=="079998"))
+    ($att['name']=="林哲民" and $att['school_code']=="079998") or
+    ($att['name']=="林金玉" and $att['school_code']=="079998") or
+    ($att['name']=="林政言" and $att['school_code']=="079998"))
     <div class="container mt-5">
         <h2 class="mb-4">上傳 CSV 檔案</h2>
         <form action="{{ route('upload_csv') }}" method="POST" enctype="multipart/form-data">

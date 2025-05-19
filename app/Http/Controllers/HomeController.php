@@ -54,7 +54,10 @@ class HomeController extends Controller
                     } else {
                         echo "無法開啟檔案";
                     }
-                    if(($att['name']=="王麒富" and $att['school_code']=="074628") or ($att['name']=="林哲民" and $att['school_code']=="079998")){
+                    if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
+                    ($att['name']=="林哲民" and $att['school_code']=="079998") or
+                    ($att['name']=="林金玉" and $att['school_code']=="079998") or
+                    ($att['name']=="林政言" and $att['school_code']=="079998")){
                         $all_staffs = StaffView::where('staff_kind','<>', '學生')     
                         ->get();
                         $all_staffs_count = $all_staffs->count();
