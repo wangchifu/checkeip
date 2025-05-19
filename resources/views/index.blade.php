@@ -92,7 +92,8 @@
                                     {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
                                 @else
                                     {{ $maybe_user->staff_sid }}
-                                @endif                                
+                                @endif      
+                                {{ $maybe_user->staff_kind }}<br>                                 
                                 {{ $maybe_user->staff_title }}<br>                                                     
                                 {{ $maybe_user->staff_name }})</span>
                             @else
