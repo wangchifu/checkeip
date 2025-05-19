@@ -112,6 +112,10 @@
     </div>        
     @endif
     <h2 class="mb-4">{{ $att['school_name'] }}已登記列表</h2>
+    <?php
+    date_default_timezone_set('Asia/Taipei');
+    ?>
+    <p>名冊更新 ({{ $all_users_count }}人 {{ date("Y-m-d H:i:s", filectime(storage_path('app/privacy/all.csv'))) }})</p>
     <p class="text-danger">*若確定有填寫表單，卻沒有在下列，很可能是因為身分證填錯！</p>
     <table class="table table-bordered table-striped align-middle">
         <thead class="table-dark">
