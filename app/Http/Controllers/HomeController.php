@@ -61,10 +61,13 @@ class HomeController extends Controller
                                 $big_error_users1[$data[1]]['gsuite'] = $data[3];
                                 $big_error_users1[$data[1]]['agree'] = $data[4];
                             }
-                            $users[$pid]['date'] = $data[0];
-                            $users[$pid]['pid'] = $pid;
-                            $users[$pid]['gsuite'] = $data[3];
-                            $users[$pid]['agree'] = $data[4];                            
+                            if(!empty($pid)){
+                                $users[$pid]['date'] = $data[0];
+                                $users[$pid]['pid'] = $pid;
+                                $users[$pid]['gsuite'] = $data[3];
+                                $users[$pid]['agree'] = $data[4];                            
+                            }
+                            
                         }                    
                         fclose($handle);
                     } else {
@@ -289,12 +292,14 @@ class HomeController extends Controller
                             while (($data = fgetcsv($handle, 1000, ',')) !== false) {                                                        
                                 $pid = mb_convert_kana($data[1], 'as');
                                 $pid = str_replace(' ', '', $pid);
-                                $pid = strtoupper($pid);                                
-                                                                
+                                $pid = strtoupper($pid);                                                                                                                                
+                                
+                                if(!empty($pid)){
                                 $users[$pid]['date'] = $data[0];
                                 $users[$pid]['pid'] = $pid;
                                 $users[$pid]['gsuite'] = $data[3];
                                 $users[$pid]['agree'] = $data[4];                            
+                                }
                             }                    
                             fclose($handle);
                         } else {
