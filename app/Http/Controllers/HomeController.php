@@ -235,7 +235,9 @@ class HomeController extends Controller
         $att = session('gsuite_login');
         if(!empty($att)){
             if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
-                ($att['name']=="林哲民" and $att['school_code']=="079998"))
+                ($att['name']=="林哲民" and $att['school_code']=="079998") or
+                ($att['name']=="林金玉" and $att['school_code']=="079998") or
+                ($att['name']=="林政言" and $att['school_code']=="079998"))                
             {
                 $file = $request->file('csvFile');
                 if ($file) {
