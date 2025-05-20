@@ -26,7 +26,8 @@ class HomeController extends Controller
         $all_users_count = 0;
         if(!empty($att)){            
             if($att['login']){   
-                $staffs = Staff::where('staff_sid', session('gsuite_login.school_code'))       
+                $staffs = Staff::where('staff_sid', session('gsuite_login.school_code'))    
+                ->where('staff_status', 1)   
                 ->where('staff_kind','<>', '學生')     
                 ->get();
                 foreach($staffs as $staff) {
@@ -74,6 +75,7 @@ class HomeController extends Controller
                     ($att['name']=="林金玉" and $att['school_code']=="079998") or
                     ($att['name']=="林政言" and $att['school_code']=="079998")){
                         $all_staffs = Staff::where('staff_kind','<>', '學生')     
+                        ->where('staff_status', 1)
                         ->get();
                         $all_staffs_count = $all_staffs->count();
                         foreach($all_staffs as $staff) {
@@ -265,7 +267,8 @@ class HomeController extends Controller
                 $schools_id = config('ge.schools_id');
 
                 if($code){
-                    $staffs = Staff::where('staff_sid', $code)       
+                    $staffs = Staff::where('staff_sid', $code)   
+                    ->where('staff_status', 1)    
                     ->where('staff_kind','<>', '學生')     
                     ->get();
                     foreach($staffs as $staff) {
