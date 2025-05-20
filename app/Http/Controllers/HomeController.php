@@ -228,6 +228,7 @@ class HomeController extends Controller
     {
         $schools_id = [];
         $check_users = [];
+        $teachers = [];
         $att = session('gsuite_login');
         if(!empty($att)){
             if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
