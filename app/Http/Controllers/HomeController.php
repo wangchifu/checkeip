@@ -5,67 +5,89 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Session;
 use App\Models\StaffView;
+use App\Models\Staff;
 
 class HomeController extends Controller
 {
     public function index()
-    {        
+    {                
+        $schools_id = config('ge.schools_id');
         $att = session('gsuite_login');
         $staffs = [];
         $teachers = [];
         $all_teachers = [];
         $users = [];
         $error_users = [];
+        $big_error_users1 = [];
+        $big_error_users2 = [];
         $all_error_users = [];
         $check_users = [];
         $all_staffs_count = 0;
         $all_users_count = 0;
         if(!empty($att)){            
-            if($att['login']){
-                $staffs = StaffView::where('staff_sid', session('gsuite_login.school_code'))       
+            if($att['login']){   
+                $staffs = Staff::where('staff_sid', session('gsuite_login.school_code'))       
                 ->where('staff_kind','<>', '學生')     
                 ->get();
                 foreach($staffs as $staff) {
-                    $teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
-                    $teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
-                    $gsuite = $this->hideAccount($staff->gsuite_account);
-                    $teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
-                }   
+                    $pid = mb_convert_kana($staff->staff_plan_id, 'as');
+                    $pid = str_replace(' ', '', $pid);
+                    $pid = strtoupper($pid);                                                    
+                    $teachers[$pid]['name'] = $staff->staff_name;        
+                    $teachers[$pid]['title'] = $staff->staff_title; 	                                       
+                }      
+                
+                //dd($teachers);
                 
                 if(is_file(storage_path('app/privacy/all.csv'))){
                     $csvFile = storage_path('app/privacy/all.csv');                    
                     if (($handle = fopen($csvFile, 'r')) !== false) {
                         while (($data = fgetcsv($handle, 1000, ',')) !== false) {        
                             $all_users_count++;                    
-                            $data[1] = str_replace(' ', '', $data[1]);
-                            $data[1] = strtoupper($data[1]);    
-                            if(!$this->isValidTaiwanID($data[1])){
-                                $error_users[hash('sha256',$data[1])]['date'] = $data[0];
-                                $error_users[hash('sha256',$data[1])]['pid'] = $data[1];
-                                $error_users[hash('sha256',$data[1])]['gsuite'] = $data[3];
-                                $error_users[hash('sha256',$data[1])]['agree'] = $data[4];
+                            $pid = mb_convert_kana($data[1], 'as');
+                            $pid = str_replace(' ', '', $pid);
+                            $pid = strtoupper($pid);                                
+                            if(!$this->isValidTaiwanID($data[1])){                                                                
+                                $error_users[$data[1]]['date'] = $data[0];
+                                $error_users[$data[1]]['pid'] = $pid;
+                                $error_users[$data[1]]['gsuite'] = $data[3];
+                                $error_users[$data[1]]['agree'] = $data[4];
                             }
-                            $users[hash('sha256',$data[1])]['date'] = $data[0];
-                            $users[hash('sha256',$data[1])]['pid'] = $data[1];
-                            $users[hash('sha256',$data[1])]['gsuite'] = $data[3];
-                            $users[hash('sha256',$data[1])]['agree'] = $data[4];
-                        }
+
+                            if($this->containsFullWidth($data[1])){
+                                $big_error_users1[$data[1]]['date'] = $data[0];
+                                $big_error_users1[$data[1]]['pid'] = $pid;
+                                $big_error_users1[$data[1]]['gsuite'] = $data[3];
+                                $big_error_users1[$data[1]]['agree'] = $data[4];
+                            }
+                            $users[$pid]['date'] = $data[0];
+                            $users[$pid]['pid'] = $pid;
+                            $users[$pid]['gsuite'] = $data[3];
+                            $users[$pid]['agree'] = $data[4];                            
+                        }                    
                         fclose($handle);
                     } else {
                         echo "無法開啟檔案";
-                    }
+                    }                    
                     if(($att['name']=="王麒富" and $att['school_code']=="074628") or 
                     ($att['name']=="林哲民" and $att['school_code']=="079998") or
                     ($att['name']=="林金玉" and $att['school_code']=="079998") or
                     ($att['name']=="林政言" and $att['school_code']=="079998")){
-                        $all_staffs = StaffView::where('staff_kind','<>', '學生')     
+                        $all_staffs = Staff::where('staff_kind','<>', '學生')     
                         ->get();
                         $all_staffs_count = $all_staffs->count();
                         foreach($all_staffs as $staff) {
-                            $all_teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
-                            $all_teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
-                            $gsuite = $this->hideAccount($staff->gsuite_account);
-                            $all_teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
+                            if($this->containsFullWidth($staff->staff_plan_id)){
+                                $big_error_users2[$staff->staff_plan_id]['school'] = $schools_id[$staff->staff_sid]; 
+                                $big_error_users2[$staff->staff_plan_id]['name'] = $staff->staff_name; 
+                                $big_error_users2[$staff->staff_plan_id]['title'] = $staff->staff_title;                                 
+                            }
+
+                            $pid = str_replace(' ', '', $staff->staff_plan_id);
+                            $pid = strtoupper($pid);                                
+                            $pid = mb_convert_kana($pid, 'as');
+                            $all_teachers[$pid]['name'] = $staff->staff_name;        
+                            $all_teachers[$pid]['title'] = $staff->staff_title; 	                                                                     
                         }
                         foreach($users as $k => $v) {
                             if(!isset($all_teachers[$k])){
@@ -89,18 +111,22 @@ class HomeController extends Controller
                         $v['name'] = $this->hideMiddleChineseName($v['name']);
                         $check_users[$k]['name'] = $v['name'];
                         $check_users[$k]['title'] = $v['title'];
-                        $check_users[$k]['gsuite_account'] = $v['gsuite_account'];
+                        $gsuite = str_replace('@chc.edu.tw', '', $users[$k]['gsuite']);
+                        $gsuite = $this->hideAccount($gsuite);
+                        $check_users[$k]['gsuite_account'] = $gsuite;
                     }
                 }                
             }                            
         }
 
-        //dd($all_error_users);
+        //dd($big_error_users2);
         
         
         $data = [
             'check_users' => $check_users,
             'error_users' => $error_users,     
+            'big_error_users1'=>$big_error_users1,
+            'big_error_users2'=>$big_error_users2,
             'all_error_users' => $all_error_users,   
             'all_users_count'=> $all_users_count,
             'all_staffs_count'=> $all_staffs_count,
@@ -239,32 +265,36 @@ class HomeController extends Controller
                 $schools_id = config('ge.schools_id');
 
                 if($code){
-                    $staffs = StaffView::where('staff_sid', $code)       
+                    $staffs = Staff::where('staff_sid', $code)       
                     ->where('staff_kind','<>', '學生')     
                     ->get();
                     foreach($staffs as $staff) {
-                        $teachers[$staff->staff_person_id]['name'] = $staff->staff_name;        
-                        $teachers[$staff->staff_person_id]['title'] = $staff->staff_title; 	 
-                        $gsuite = $this->hideAccount($staff->gsuite_account);
-                        $teachers[$staff->staff_person_id]['gsuite_account'] = $gsuite;                    
-                    }   
+                        $pid = mb_convert_kana($staff->staff_plan_id, 'as');
+                        $pid = str_replace(' ', '', $pid);
+                        $pid = strtoupper($pid);                                                    
+                        $teachers[$pid]['name'] = $staff->staff_name;        
+                        $teachers[$pid]['title'] = $staff->staff_title; 	                                       
+                    }      
+                    
+                    //dd($teachers);
                     
                     if(is_file(storage_path('app/privacy/all.csv'))){
                         $csvFile = storage_path('app/privacy/all.csv');                    
                         if (($handle = fopen($csvFile, 'r')) !== false) {
-                            while (($data = fgetcsv($handle, 1000, ',')) !== false) {        
-                                $data[1] = str_replace(' ', '', $data[1]);
-                                $data[1] = strtoupper($data[1]);    
-                                $users[hash('sha256',$data[1])]['date'] = $data[0];
-                                $users[hash('sha256',$data[1])]['pid'] = $data[1];
-                                $users[hash('sha256',$data[1])]['gsuite'] = $data[3];
-                                $users[hash('sha256',$data[1])]['agree'] = $data[4];
-                            }
+                            while (($data = fgetcsv($handle, 1000, ',')) !== false) {                                                        
+                                $pid = mb_convert_kana($data[1], 'as');
+                                $pid = str_replace(' ', '', $pid);
+                                $pid = strtoupper($pid);                                
+                                                                
+                                $users[$pid]['date'] = $data[0];
+                                $users[$pid]['pid'] = $pid;
+                                $users[$pid]['gsuite'] = $data[3];
+                                $users[$pid]['agree'] = $data[4];                            
+                            }                    
                             fclose($handle);
                         } else {
                             echo "無法開啟檔案";
-                        }                        
-                                                                      
+                        }                                            
                     }
                     
                     foreach($teachers as $k => $v) {
@@ -276,9 +306,11 @@ class HomeController extends Controller
                             $v['name'] = $this->hideMiddleChineseName($v['name']);
                             $check_users[$k]['name'] = $v['name'];
                             $check_users[$k]['title'] = $v['title'];
-                            $check_users[$k]['gsuite_account'] = $v['gsuite_account'];
+                            $gsuite = str_replace('@chc.edu.tw', '', $users[$k]['gsuite']);
+                            $gsuite = $this->hideAccount($gsuite);
+                            $check_users[$k]['gsuite_account'] = $gsuite;
                         }
-                    }   
+                    }                      
                 }
             }        
         }
@@ -371,5 +403,9 @@ class HomeController extends Controller
         // 驗證結果
         return $sum % 10 === 0;
     }    
+
+    public function containsFullWidth($string) {
+        return preg_match('/[^\x00-\x7F]/u', $string);
+    }
     
 }

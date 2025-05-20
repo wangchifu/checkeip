@@ -22,7 +22,7 @@
             date_default_timezone_set('Asia/Taipei');
             ?>
             <p>已有檔案上傳 ({{ $all_users_count }}人 {{ date("Y-m-d H:i:s", filectime(storage_path('app/privacy/all.csv'))) }})</p>
-            <p>以下為身分證格式有問題者</p>
+            <p>以下為csv檔中身分證格式有問題者</p>
             <table class="table table-bordered table-striped align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -108,6 +108,39 @@
                 </tbody>
             </table>
             <hr>
+            
+            <p>以下為 staff ({{ $all_staffs_count }} 人) 資料表中，身分證有全形字母數字者</p>
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>序號</th>
+                        <th>身分證</th>
+                        <th>學校</th>
+                        <th>職稱</th>
+                        <th>姓名</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($big_error_users2 as $k=>$v)
+                    <tr style="word-break: break-word;overflow-wrap: break-word;">            
+                        <td>{{ $loop->iteration }}</td>                            
+                        <td>
+                            {{ $k }}
+                        </td>                        
+                        <td>
+                            {{ $v['school'] }}                            
+                        </td>
+                        <td>
+                            {{ $v['title'] }}
+                        </td>
+                        <td>
+                            {{ $v['name'] }}
+                        </td>
+                    </tr>                    
+                @endforeach
+                </tbody>
+            </table>
+            <hr>            
         @endif
     </div>        
     @endif
