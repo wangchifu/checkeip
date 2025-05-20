@@ -49,10 +49,10 @@ class HomeController extends Controller
                             $pid = str_replace(' ', '', $pid);
                             $pid = strtoupper($pid);                                
                             if(!$this->isValidTaiwanID($data[1])){                                                                
-                                $error_users[$data[1]]['date'] = $data[0];
-                                $error_users[$data[1]]['pid'] = $pid;
-                                $error_users[$data[1]]['gsuite'] = $data[3];
-                                $error_users[$data[1]]['agree'] = $data[4];
+                                $error_users[$data[3]]['date'] = $data[0];
+                                $error_users[$data[3]]['pid'] = $pid;
+                                $error_users[$data[3]]['gsuite'] = $data[3];
+                                $error_users[$data[3]]['agree'] = $data[4];
                             }
 
                             if($this->containsFullWidth($data[1])){

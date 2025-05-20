@@ -28,6 +28,7 @@
                     <tr>
                         <th>序號</th>
                         <th>身分證</th>
+                        <th>同意</th>
                         <th>gsuite帳號</th>
                         <th>日期</th>
                     </tr>
@@ -37,6 +38,7 @@
                     <tr style="word-break: break-word;overflow-wrap: break-word;">            
                         <td>{{ $loop->iteration }}</td>            
                         <td>{{ $user['pid'] }}</td>
+                        <td>{{ $user['agree'] }}</td>
                         <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
                         <?php
                             $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
