@@ -21,6 +21,7 @@ class HomeController extends Controller
         $big_error_users1 = [];
         $big_error_users2 = [];
         $all_error_users = [];
+        $yahoo_error_users = [];
         $check_users = [];
         $all_staffs_count = 0;
         $all_users_count = 0;
