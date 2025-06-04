@@ -52,6 +52,7 @@
                     <th>職稱</th>
                     <th>姓名</th>
                     <th>Gsuite 帳號</th>
+                    <th>備用信箱</th>
                     <th>填寫日期</th>
                 </tr>
             </thead>
@@ -74,6 +75,7 @@
                     <td><?= htmlspecialchars($user['title']) ?></td>
                     <td><?= htmlspecialchars($user['name']) ?></td>
                     <td><?= htmlspecialchars($user['gsuite_account']) ?></td>
+                    <td><?= htmlspecialchars($user['mail']) ?></td>
                     <td><?= htmlspecialchars($user['date']) ?></td>
                 </tr>
                 <?php $n++; ?>

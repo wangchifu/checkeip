@@ -60,12 +60,15 @@ class HomeController extends Controller
                                 $big_error_users1[$data[1]]['pid'] = $pid;
                                 $big_error_users1[$data[1]]['gsuite'] = $data[3];
                                 $big_error_users1[$data[1]]['agree'] = $data[4];
-                            }
+                                $big_error_users1[$data[1]]['mail'] = $data[2];
+                            }                            
+
                             if(!empty($pid)){
                                 $users[$pid]['date'] = $data[0];
                                 $users[$pid]['pid'] = $pid;
                                 $users[$pid]['gsuite'] = $data[3];
                                 $users[$pid]['agree'] = $data[4];                            
+                                $users[$pid]['mail'] = $data[2];     
                             }
                             
                         }                    
@@ -101,6 +104,16 @@ class HomeController extends Controller
                                 $all_error_users[$k]['check_pid'] = ($this->isValidTaiwanID($users[$k]['pid'])) ?true:false;
                                 $all_error_users[$k]['gsuite'] = $users[$k]['gsuite'];
                                 $all_error_users[$k]['agree'] = $users[$k]['agree'];
+                                $all_error_users[$k]['mail'] = $users[$k]['mail'];
+                            }
+
+                            if(strpos($v['mail'], '@yahoo') or strpos($v['mail'], '@YAHOO') !== false) {
+                                $yahoo_error_users[$k]['date'] = $users[$k]['date'];
+                                $yahoo_error_users[$k]['pid'] = $users[$k]['pid'];
+                                $yahoo_error_users[$k]['check_pid'] = ($this->isValidTaiwanID($users[$k]['pid'])) ?true:false;
+                                $yahoo_error_users[$k]['gsuite'] = $users[$k]['gsuite'];
+                                $yahoo_error_users[$k]['agree'] = $users[$k]['agree'];
+                                $yahoo_error_users[$k]['mail'] = $users[$k]['mail'];
                             }
 
                         }
@@ -113,6 +126,7 @@ class HomeController extends Controller
                         $pid = $this->hideAccount($users[$k]['pid']);
                         $check_users[$k]['pid'] = $pid;
                         $check_users[$k]['agree'] = $users[$k]['agree'];
+                        $check_users[$k]['mail'] = $users[$k]['mail'];
                         $v['name'] = $this->hideMiddleChineseName($v['name']);
                         $check_users[$k]['name'] = $v['name'];
                         $check_users[$k]['title'] = $v['title'];
@@ -132,6 +146,7 @@ class HomeController extends Controller
             'error_users' => $error_users,     
             'big_error_users1'=>$big_error_users1,
             'big_error_users2'=>$big_error_users2,
+            'yahoo_error_users'=>$yahoo_error_users,
             'all_error_users' => $all_error_users,   
             'all_users_count'=> $all_users_count,
             'all_staffs_count'=> $all_staffs_count,
@@ -299,6 +314,7 @@ class HomeController extends Controller
                                 $users[$pid]['pid'] = $pid;
                                 $users[$pid]['gsuite'] = $data[3];
                                 $users[$pid]['agree'] = $data[4];                            
+                                $users[$pid]['mail'] = $data[2];      
                                 }
                             }                    
                             fclose($handle);
@@ -313,6 +329,7 @@ class HomeController extends Controller
                             $pid = $this->hideAccount($users[$k]['pid']);
                             $check_users[$k]['pid'] = $pid;
                             $check_users[$k]['agree'] = $users[$k]['agree'];
+                            $check_users[$k]['mail'] = $users[$k]['mail'];
                             $v['name'] = $this->hideMiddleChineseName($v['name']);
                             $check_users[$k]['name'] = $v['name'];
                             $check_users[$k]['title'] = $v['title'];

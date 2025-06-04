@@ -142,7 +142,50 @@
                 @endforeach
                 </tbody>
             </table>
-            <hr>            
+            <hr>                           
+            
+            <p>以下為備用信箱屬於 yahoo 者</p>
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>序號</th>                        
+                        <th>gsuite帳號</th>
+                        <th>可能使用者</th>
+                        <th>備用信箱</th>
+                        <th>日期</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($yahoo_error_users as $user)
+                    <tr style="word-break: break-word;overflow-wrap: break-word;">            
+                        <td>{{ $loop->iteration }}</td>                                                    
+                        <?php $gsuite = str_replace("@chc.edu.tw","",$user['gsuite']); ?>
+                        <?php
+                            $maybe_user = \App\Models\StaffView::where('gsuite_account', $gsuite)->first(); 
+                            $schools_id = config('ge.schools_id');                           
+                        ?>
+                        <td>{{ $gsuite }}</td>
+                        <td>
+                            @if(!empty($maybe_user->id))                                       
+                                @if(isset($schools_id[$maybe_user->staff_sid]))
+                                    {{ $schools_id[$maybe_user->staff_sid]}}<br>                                    
+                                @else
+                                    {{ $maybe_user->staff_sid }}
+                                @endif      
+                                {{ $maybe_user->staff_kind }}
+                                {{ $maybe_user->staff_title }}                                                 
+                                {{ $maybe_user->staff_name }}
+                            @else
+                                <span class="text-danger small">(gsuite 對應到 staff_view 也沒有查詢到)
+                            @endif                            
+                        </td>
+                        <td>{{ $user['mail'] }}</td>
+                        <td>{{ $user['date'] }}</td>
+                    </tr>                    
+                @endforeach
+                </tbody>
+            </table>
+            <hr>
         @endif
     </div>        
     @endif
@@ -161,6 +204,7 @@
                 <th>職稱</th>
                 <th>姓名</th>
                 <th>Gsuite 帳號</th>
+                <th>備用信箱</th>
                 <th>填寫日期</th>
             </tr>
         </thead>
@@ -183,6 +227,7 @@
                 <td><?= htmlspecialchars($user['title']) ?></td>
                 <td><?= htmlspecialchars($user['name']) ?></td>
                 <td><?= htmlspecialchars($user['gsuite_account']) ?></td>
+                <td><?= htmlspecialchars($user['mail']) ?></td>
                 <td><?= htmlspecialchars($user['date']) ?></td>
             </tr>
             <?php $n++; ?>
